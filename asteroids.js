@@ -18,7 +18,7 @@ Sprite.prototype.draw = function(ctx) {
   for (var i=0; i < this.vertices.length; i++) {
     rotation.push(Point.rotation(this.vertices[i], this.theta));
   }
-  
+
   // wraparound code
   if (this.coords.x > canvas.width)
     this.coords.x = 0;
