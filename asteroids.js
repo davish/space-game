@@ -6,16 +6,25 @@ const SPEED_LIMIT = 10;
 var Ship = new Sprite([new Point(-6, -10), new Point(0, 14), new Point(6, -10)], new Point(canvas.width/2, canvas.height/2));
 var Thruster = new Sprite([new Point(-3, -12), new Point(0, -20), new Point(3, -12)], new Point(Ship.coords.x, Ship.coords.y));
 
+var bullets = [];
+
 function Sprite(pts, start) {
   this.vertices = pts; // array of Points that define the polygon of the sprite.
   this.coords = start; // point of the center of the Sprite
+  
   this.theta = -Math.PI/2; // angle of where the Sprite is pointing
   this.velocity = new Vector(0, 0); // set velocity to 0 to start.
+  this.speedLimit = SPEED_LIMIT;
+  
+  this.age = 0;
 
   this.debug = false; // debug velocity vector
+
 }
 
 Sprite.prototype.draw = function(ctx) {
+  this.age++;
+
   var rotation = [];
 
   // wraparound
@@ -56,9 +65,19 @@ Sprite.prototype.move = function() {
   /*
     Add velocity vector to the current location.
   */
-  this.velocity.magnitude = Math.min(this.velocity.magnitude, SPEED_LIMIT);
+  this.velocity.magnitude = Math.min(this.velocity.magnitude, this.speedLimit);
   this.coords = Point.add(this.coords, this.velocity.components());
 }
+
+function Bullet(owner) {
+  Sprite.call(this, [new Point(0,0), new Point(0,1), new Point(1,1), new Point(1,0)])
+  this.coords = owner.coords
+  this.theta = owner.theta;
+  this.speedLimit = owner.speedLimit + 5;
+
+  this.velocity = Vector.add(owner.velocity, new Vector(owner.theta, 5));
+}
+Bullet.prototype = new Sprite()
 
 window.onkeydown = function(e) {
   if (e.which == 37) {
@@ -69,6 +88,9 @@ window.onkeydown = function(e) {
   }
   else if (e.which == 38) {
     Ship.thruster = "on";
+  }
+  else if (e.which == 32 && bullets.length < 5) {
+    bullets.push(new Bullet(Ship));
   }
 }
 window.onkeyup = function(e) {
@@ -99,6 +121,15 @@ function step() {
   }
   
   Ship.draw(ctx);
+  for (var i = 0; i < bullets.length; i++) {
+    bullets[i].move()
+    bullets[i].draw(ctx)
+    console.log(bullets[i].age)
+    if (bullets[i].age > 100) {
+      bullets.splice(i, 1);
+      i--;
+    }
+  }
   window.requestAnimationFrame(step);
 }
 
