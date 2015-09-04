@@ -1,6 +1,6 @@
 function Point(x, y) {
-  this.x = Math.round(x*10)/10;
-  this.y = Math.round(y*10)/10;
+  this.x = Math.round(x*1000)/1000;
+  this.y = Math.round(y*1000)/1000;
 }
 
 Point.rotation = function(p, theta) {
@@ -32,7 +32,7 @@ Vector.add = function(a, b) {
   var b1 = b.components();
   
   var sum = Point.add(a1, b1);
-  var theta = Math.atan(sum.y/sum.x); // angle of vector is asin of slope
+  var theta = Math.atan(sum.x/sum.y); // angle of vector is asin of slope
 
   if (sum.x == 0) // can't divide by 0, but we still want the vector
     theta = Math.PI/2;
@@ -44,18 +44,5 @@ Vector.add = function(a, b) {
 
   var magnitude = Math.sqrt(Math.pow(sum.x, 2) + Math.pow(sum.y, 2)); // dist from origin
   var v = new Vector(theta, magnitude);
-  // console.log("VELOCITY: ");
-  // console.log(a1);
-  // console.log("ACCELERATION: ");
-  // console.log(b1);
-  // console.log("SUM:");
-  // console.log(sum);
-  // console.log("THETA:");
-  // console.log(theta);
-  // console.log("MAGNITUDE:");
-  // console.log(magnitude);
-  // console.log("VECTOR:");
-  // console.log(v);
-  // console.log("\n");
   return v;
 }
