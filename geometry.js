@@ -21,9 +21,7 @@ function Vector(angle, magnitude) {
 Vector.prototype.components = function() {
   // basically make the magnitude point straight up and rotate it by theta to get x and y.
   var m = new Point(0, this.magnitude);
-  // console.log(m);
   var p = Point.rotation(m, this.theta);
-  // console.log(p)
   return p;
 }
 
