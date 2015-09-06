@@ -12,6 +12,17 @@ Point.add = function(a, b) {
   return new Point(a.x + b.x, a.y + b.y);
 }
 
+Point.subtract = function(a, b) {
+  return new Point(a.x - b.x, a.y - b.y);
+}
+
+Point.multiply = function(a, scale) {
+  return new Point(a.x * scale, a.y * scale);
+}
+
+Point.distance = function(a, b) {
+  return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
+}
 
 function Vector(angle, magnitude) {
   this.theta = angle;
@@ -26,13 +37,18 @@ Vector.prototype.components = function() {
 }
 
 Vector.add = function(a, b) {
+  /* 
+    Split the vectors into their coordinate components, 
+    add those values together, and then put the new vector 
+    back into normal form.
+  */
   var a1 = a.components();
   var b1 = b.components();
   
   var sum = Point.add(a1, b1);
-  var theta = Math.atan(sum.x/sum.y); // angle of vector is asin of slope
 
-  if (sum.x == 0) // can't divide by 0, but we still want the vector
+  var theta = Math.atan(sum.x/sum.y);
+  if (sum.x == 0) // can't divide by 0, but we still want the vector to not be NaN
     theta = Math.PI/2;
   if (sum.y == 0) {
     theta = Math.PI/2 * (sum.x > 0 ? 1 : -1);
