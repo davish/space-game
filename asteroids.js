@@ -80,11 +80,11 @@ var ctx = canvas.getContext("2d");
 
 var Ship = new Spaceship(new Point(canvas.width/6 * 5, canvas.height/6 * 5));
 var stars = [
-  // new Star(new Point(canvas.width/2, canvas.height/2), 100, 10), 
+  new Star(new Point(canvas.width/2, canvas.height/2), 150, 10), 
   // new Star(new Point(canvas.width/4*3, canvas.height/2), 150, 20)
 ];
 var bullets = [];
 new Asteroid(3);
-// new Asteroid(3);
-// new Asteroid(3);
+new Asteroid(3);
+new Asteroid(3);
 window.requestAnimationFrame(step);
