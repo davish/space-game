@@ -142,13 +142,13 @@ function Asteroid(size, start, velocity, rotation) {
   this.size = size;
   switch(size) {
     case 3:
-      scale = 20;
-      break;
-    case 2:
       scale = 10;
       break;
-    case 1:
+    case 2:
       scale = 5;
+      break;
+    case 1:
+      scale = 2;
       break;
     default:
       return null;
