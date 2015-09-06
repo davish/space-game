@@ -178,6 +178,7 @@ Asteroid.prototype.move = function() {
 }
 Asteroid.prototype.draw = function(ctx) {
   Sprite.prototype.draw.call(this, ctx);
+  ctx.fill(this.getPath())
 }
 
 Asteroid.prototype.despawn = function() {
