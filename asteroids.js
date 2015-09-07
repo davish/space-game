@@ -110,6 +110,6 @@ var stars = [
 ];
 var bullets = [];
 new Asteroid(3);
-new Asteroid(3);
-new Asteroid(3);
+// new Asteroid(3);
+// new Asteroid(3);
 window.requestAnimationFrame(step);
