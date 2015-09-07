@@ -62,22 +62,24 @@ function step() {
   }
 
   for (var i = 0; i < Spaceship.all.length; i++) {
-    var points = Spaceship.all[i].getRawPath();
+    var s = Spaceship.all[i];
+    var points = s.getRawPath();
     for (var j = 0; j < Asteroid.all.length; j++) {
-      var asteroidPath = Asteroid.all[j].getPath()
-      if (Spaceship.all[i]) {
-        if (ctx.isPointInPath(asteroidPath, Spaceship.all[i].anchorEnd.x, Spaceship.all[i].anchorEnd.y)) {
-          Spaceship.all[i].velocity = Asteroid.all[j].velocity;
-          Spaceship.all[i].anchorTo = Asteroid.all[j];
-          Spaceship.all[i].anchorLock = Spaceship.all[i].theta - Asteroid.all[j].theta;
+      var a = Asteroid.all[j];
+      var asteroidPath = a.getPath()
+      if (s) {
+        if (ctx.isPointInPath(asteroidPath, s.anchorEnd.x, s.anchorEnd.y) && Math.abs(s.velocity.theta - a.velocity.theta) < Math.PI && Math.abs(s.velocity.magnitude - a.velocity.magnitude) < 10) {
+          s.velocity = a.velocity;
+          s.anchorTo = a;
+          s.anchorLock = s.theta - a.theta;
         }
         else {
-          Spaceship.all[i].anchorLock = false;
-          Spaceship.all[i].ancorTo = null;
+          s.anchorLock = false;
+          s.ancorTo = null;
         }
         for (var k = 0; k < points.length; k++)
           if (ctx.isPointInPath(asteroidPath, points[k].x, points[k].y)) {
-            Spaceship.all[i].despawn();
+            s.despawn();
             i--;
           }
       }
