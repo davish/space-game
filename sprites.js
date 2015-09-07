@@ -1,6 +1,7 @@
 const ROTATION_RATE = 5;
 const SPEED_LIMIT = 15;
 const NUM_CHILD_ASTEROIDS = 3;
+
 function Sprite(pts, start, scale) {
   this.vertices = []; // array of Points that define the polygon of the sprite.
   this.scale = scale ? scale : 1;
@@ -17,14 +18,11 @@ function Sprite(pts, start, scale) {
 
   if (start)
     Sprite.all.push(this);
-
-  this.debug = false; // debug velocity vector
-
 }
 
 Sprite.all = [];
 
-Sprite.prototype.draw = function(ctx) {
+Sprite.prototype.draw = function(ctx, path) {
   this.age++;
 
   // wraparound
@@ -37,21 +35,16 @@ Sprite.prototype.draw = function(ctx) {
   else if (this.coords.y < 0)
     this.coords.y = canvas.height;
 
-  ctx.stroke(this.getPath());
-
-  if (this.debug) {
-    ctx.beginPath();
-    var v = this.velocity.components();
-    ctx.moveTo(.5 + this.coords.x, .5 + this.coords.y);
-    var p = Point.add(v, this.coords);
-    ctx.lineTo(.5 + p.x, .5 + p.y);
-    ctx.stroke();
-  }
+  ctx.stroke(path ? path : this.getPath());
 }
 
-Sprite.prototype.getPath = function() {
+Sprite.prototype.getPath = function(pts) {
+  /*
+    returns Path2D object for drawing on to the canvas. 
+    only works in Chrome and Firefox.
+  */
   var path = new Path2D();
-  var points = this.getRawPath();
+  var points = pts ? pts : this.getRawPath();
 
   path.moveTo(points[0].x, points[0].y);
   for (var i=1; i < this.vertices.length; i++) {
@@ -62,10 +55,17 @@ Sprite.prototype.getPath = function() {
   return path;
 }
 
-Sprite.prototype.getRawPath = function() {
+Sprite.prototype.getRawPath = function(src, t, c) {
+  /*
+    returns array of Points translated and rotated into the correct position on the canvas.
+  */
+  var source = src ? src : this.vertices;
+  var angle = t ? t : this.theta;
+  var coords = c ? c : this.coords;
+
   var p = [];
-  for (var i = 0; i < this.vertices.length; i++) {
-    translated = Point.add(Point.rotation(this.vertices[i], this.theta), this.coords);
+  for (var i = 0; i < source.length; i++) {
+    translated = Point.add(Point.rotation(source[i], angle), coords);
     p.push(new Point(translated.x + .5, translated.y + .5));
   }
   return p;
@@ -100,8 +100,14 @@ Sprite.prototype.despawn = function() {
 function Spaceship(start) {
   Sprite.call(this, [new Point(-6, -10), new Point(0, 14), new Point(6, -10)], start);
   
-  this.thrust = "off";
-  this.rotation = "null"
+  this.thrust = false;
+  this.rotation = "null";
+  this.anchor = false;
+  this.anchorAge = 0;
+  this.anchorEnd = this.getRawPath()[1];
+  this.anchorLock = false;
+  this.anchorTo = null;
+
   this.thruster = new Sprite([new Point(-3, -12), new Point(0, -20), new Point(3, -12)]);
   Spaceship.all.push(this);
 }
@@ -113,12 +119,47 @@ Spaceship.prototype.despawn = function() {
   Sprite.prototype.despawn.call(this);
 }
 
+Spaceship.prototype.move = function() {
+  if (this.rotation === "left")
+    this.rotate(Math.PI/180*ROTATION_RATE);
+  else if (this.rotation === "right")
+    this.rotate(-Math.PI/180*ROTATION_RATE);
+  
+  if (this.thrust)
+    this.velocity = Vector.add(this.velocity, new Vector(this.theta, .1));
+
+  if (this.anchorTo && this.anchorLock) {
+    this.rotate(this.anchorTo.rotation);
+    this.coords = Point.add(
+      this.anchorTo.coords, 
+      Point.rotation(Point.subtract(this.coords, this.anchorTo.coords), this.anchorTo.rotation));
+  }
+
+  Sprite.prototype.move.call(this);
+}
+
 Spaceship.prototype.draw = function(ctx) {
-  if (this.thrust == "on") {
+  if (this.thrust) {
     this.thruster.coords = this.coords;
     this.thruster.theta = this.theta;
     this.thruster.draw(ctx);
   }
+
+  // Calculate and draw anchor.
+  var tip = this.getRawPath()[1];
+  var end;
+  if (this.anchor)
+    this.anchorAge = Math.min(++this.anchorAge, 60)
+  else 
+    this.anchorAge = Math.max(--this.anchorAge, 0);
+  
+  end = Point.add(new Vector(this.theta, this.anchorAge).components(), tip);
+  this.anchorEnd = end;
+  ctx.beginPath();
+  ctx.moveTo(tip.x, tip.y);
+  ctx.lineTo(end.x, end.y);
+  ctx.stroke();
+
   Sprite.prototype.draw.call(this, ctx);
 }
 
@@ -164,7 +205,7 @@ function Asteroid(size, start, velocity, rotation) {
     ], new Point(100, 100), scale);
   this.velocity = velocity ? velocity : new Vector(Math.random() * Math.PI*2, Math.random() * 2);
   this.coords = start ? start : new Point(100, 100);
-  this.rotation = Math.PI/180 * (Math.random() > .5 ? -1 : 1);
+  this.rotation = rotation != null ? rotation : Math.PI/180 * (Math.random() > .5 ? -1 : 1);
 
   Asteroid.all.push(this);
 }
@@ -173,12 +214,12 @@ Asteroid.prototype = new Sprite();
 Asteroid.all = [];
 
 Asteroid.prototype.move = function() {
-  this.theta += this.rotation;
+  this.rotate(this.rotation);
   Sprite.prototype.move.call(this);
 }
 Asteroid.prototype.draw = function(ctx) {
   Sprite.prototype.draw.call(this, ctx);
-  ctx.fill(this.getPath())
+  // ctx.fill(this.getPath())
 }
 
 Asteroid.prototype.despawn = function() {

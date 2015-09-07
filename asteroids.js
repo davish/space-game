@@ -1,38 +1,43 @@
+var keyboard = {
+  'left': 37,
+  'right': 39,
+  'up': 38,
+  'space': 32,
+  'w': 87
+}
+
 window.onkeydown = function(e) {
-  if (e.which == 37) {
+  if (e.which == keyboard['left']) {
     Ship.rotation = "left";
   }
-  else if (e.which == 39) {
+  else if (e.which == keyboard['right']) {
     Ship.rotation = "right";
   }
-  else if (e.which == 38) {
-    Ship.thrust = "on";
+  else if (e.which == keyboard['up']) {
+    Ship.thrust = true;
   }
-  else if (e.which == 32 && bullets.length < 6) {
+  else if (e.which == keyboard['space'] && bullets.length < 6) {
     bullets.push(new Bullet(Ship));
+  }
+  else if (e.which == keyboard['w']) {
+    Ship.anchor = true;
   }
 }
 window.onkeyup = function(e) {
-  if (e.which == 37 || e.which == 39) {
+  if (e.which == keyboard['left'] || e.which == keyboard['right']) {
     Ship.rotation = "null";
   }
-  if (e.which == 38) {
-    Ship.thrust = "off";
+  else if (e.which == keyboard['up']) {
+    Ship.thrust = false;
+  }
+  else if (e.which == keyboard['w']) {
+    Ship.anchor = false;
   }
 }
 
 function step() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  if (Ship.rotation === "left")
-    Ship.rotate(Math.PI/180*ROTATION_RATE);
-  else if (Ship.rotation === "right")
-    Ship.rotate(-Math.PI/180*ROTATION_RATE);
   
-  if (Ship.thrust === "on")
-    Ship.velocity = Vector.add(Ship.velocity, new Vector(Ship.theta, .1));
-
-  // collision detection
   for (var i = 0; i < bullets.length; i++) {
     if (bullets[i] instanceof Bullet && bullets[i].age > 100) {
       bullets[i].despawn();
@@ -40,6 +45,9 @@ function step() {
     }
   }
 
+  /*
+    Collision Detection
+  */
   for (var i = 0; i < Asteroid.all.length; i++) {
     for (var j = 0; j < bullets.length; j++) {
       if (Asteroid.all[i] && ctx.isPointInPath(Asteroid.all[i].getPath(), bullets[j].coords.x, bullets[j].coords.y)) {
@@ -56,14 +64,29 @@ function step() {
   for (var i = 0; i < Spaceship.all.length; i++) {
     var points = Spaceship.all[i].getRawPath();
     for (var j = 0; j < Asteroid.all.length; j++) {
-      for (var k = 0; k < points.length; k++)
-        if (ctx.isPointInPath(Asteroid.all[j].getPath(), points[k].x, points[k].y)) {
-          Spaceship.all[i].despawn();
-          i--;
+      var asteroidPath = Asteroid.all[j].getPath()
+      if (Spaceship.all[i]) {
+        if (ctx.isPointInPath(asteroidPath, Spaceship.all[i].anchorEnd.x, Spaceship.all[i].anchorEnd.y)) {
+          Spaceship.all[i].velocity = Asteroid.all[j].velocity;
+          Spaceship.all[i].anchorTo = Asteroid.all[j];
+          Spaceship.all[i].anchorLock = Spaceship.all[i].theta - Asteroid.all[j].theta;
         }
+        else {
+          Spaceship.all[i].anchorLock = false;
+          Spaceship.all[i].ancorTo = null;
+        }
+        for (var k = 0; k < points.length; k++)
+          if (ctx.isPointInPath(asteroidPath, points[k].x, points[k].y)) {
+            Spaceship.all[i].despawn();
+            i--;
+          }
+      }
     }
   }
 
+  /*
+    Draw Sprites
+  */
   for (var i = 0; i < Sprite.all.length; i++) {
     Sprite.all[i].move();
     Sprite.all[i].draw(ctx);
@@ -85,6 +108,6 @@ var stars = [
 ];
 var bullets = [];
 new Asteroid(3);
-new Asteroid(3);
-new Asteroid(3);
+// new Asteroid(3);
+// new Asteroid(3);
 window.requestAnimationFrame(step);
