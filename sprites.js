@@ -105,8 +105,9 @@ function Spaceship(start) {
   this.anchor = false;
   this.anchorAge = 0;
   this.anchorEnd = this.getRawPath()[1];
-  this.anchorLock = false;
   this.anchorTo = null;
+
+  this.score = 0;
 
   this.thruster = new Sprite([new Point(-3, -12), new Point(0, -20), new Point(3, -12)]);
   Spaceship.all.push(this);
@@ -128,7 +129,7 @@ Spaceship.prototype.move = function() {
   if (this.thrust)
     this.velocity = Vector.add(this.velocity, new Vector(this.theta, .1));
 
-  if (this.anchorTo && this.anchorLock) {
+  if (this.anchorTo) {
     this.rotate(this.anchorTo.rotation);
     this.coords = Point.add(
       this.anchorTo.coords, 
@@ -148,8 +149,13 @@ Spaceship.prototype.draw = function(ctx) {
   // Calculate and draw anchor.
   var tip = this.getRawPath()[1];
   var end;
-  if (this.anchor)
+  if (this.anchor) {
     this.anchorAge = Math.min(++this.anchorAge, 60)
+    if (this.anchorTo)
+      this.anchorAge = this.length + 1;
+    else
+      this.length = this.anchorAge;
+  }
   else 
     this.anchorAge = Math.max(--this.anchorAge, 0);
   
@@ -168,7 +174,7 @@ function Bullet(owner) {
     [new Point(0,0), new Point(0,1), new Point(1,1), new Point(1,0)], new Point(owner.coords.x, owner.coords.y))
   this.theta = owner.theta;
   this.speedLimit = owner.speedLimit + 5;
-
+  this.owner = owner;
   this.velocity = Vector.add(owner.velocity, new Vector(owner.theta, 5));
 }
 Bullet.prototype = new Sprite();
