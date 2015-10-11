@@ -74,8 +74,7 @@ function step() {
       var a = Asteroid.all[j];
       var asteroidPath = a.getPath()
       if (s) {
-        if (ctx.isPointInPath(asteroidPath, s.anchorEnd.x, s.anchorEnd.y)) {
-          //  && Math.abs(s.velocity.theta - a.velocity.theta) < Math.PI && Math.abs(s.velocity.magnitude - a.velocity.magnitude) < 10
+        if (ctx.isPointInPath(asteroidPath, s.anchorEnd.x, s.anchorEnd.y) && Math.abs(s.velocity.theta - a.velocity.theta) < Math.PI && Math.abs(s.velocity.magnitude - a.velocity.magnitude) < 10) {
           s.velocity = a.velocity;
           s.anchorTo = a;
         }
@@ -112,12 +111,25 @@ var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext("2d");
 
 var Ship = new Spaceship(new Point(300, 200));
-var stars = [
-  // new Star(new Point(canvas.width/2, canvas.height/2), 150, 10), 
-  // new Star(new Point(canvas.width/4*3, canvas.height/2), 150, 20)
-];
+Ship.velocity = new Vector(0, 3);
+var stars = [];
 var bullets = [];
-new Asteroid(3, new Point(100, 200), new Vector(0, 0));
-new Asteroid(3, new Point(650, 200), new Vector(0, 0));
-// new Asteroid(3);
-window.requestAnimationFrame(step);
+
+function start() {
+  var num = document.getElementById('numStars').value;
+  var interval = 2*Math.PI/num;
+  var v = new Vector(0, 100);
+  var center = new Point(canvas.width/2, canvas.height/2);
+  for (var i = 0; i < num; i++) {
+    var starLoc = Point.add(center, v.components());
+    stars.push(new Star(starLoc, 150, 10));
+    v.theta += interval;
+  }
+
+  var a = document.getElementById('numAsteroids').value;
+  for (var i = 0; i < a; i++)
+    new Asteroid(3);
+
+  window.requestAnimationFrame(step);
+}
+

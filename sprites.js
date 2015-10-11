@@ -1,7 +1,7 @@
 const ROTATION_RATE = 5;
 const SPEED_LIMIT = 15;
 const NUM_CHILD_ASTEROIDS = 3;
-
+const SCALE_FACTOR = 1;
 function Sprite(pts, start, scale) {
   this.vertices = []; // array of Points that define the polygon of the sprite.
   this.scale = scale ? scale : 1;
@@ -65,7 +65,7 @@ Sprite.prototype.getRawPath = function(src, t, c) {
 
   var p = [];
   for (var i = 0; i < source.length; i++) {
-    translated = Point.add(Point.rotation(source[i], angle), coords);
+    translated = Point.add(Point.multiply(Point.rotation(source[i], angle), SCALE_FACTOR), coords);
     p.push(new Point(translated.x + .5, translated.y + .5));
   }
   return p;
@@ -208,9 +208,9 @@ function Asteroid(size, start, velocity, rotation) {
     new Point(-1, 4),
     new Point(3, 4),
     new Point(3, -1)
-    ], new Point(100, 100), scale);
+    ], new Point(Math.round(Math.random()) * 300, Math.round(Math.random() * 300)), scale);
   this.velocity = velocity ? velocity : new Vector(Math.random() * Math.PI*2, Math.random() * 2);
-  this.coords = start ? start : new Point(100, 100);
+  this.coords = start ? start : this.coords;
   this.rotation = rotation != null ? rotation : Math.PI/180 * (Math.random() > .5 ? -1 : 1);
 
   Asteroid.all.push(this);
