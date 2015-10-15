@@ -153,11 +153,14 @@ function start() {
   var interval = 2*Math.PI/num;
   var v = new Vector(0, 100);
   var center = new Point(canvas.width/2, canvas.height/2);
+
   for (var i = 0; i < num; i++) {
     var starLoc = Point.add(center, v.components());
     stars.push(new Star(starLoc, 150, 10));
     v.theta += interval;
   }
+  if (num == 1)
+    stars[0].coords = center;
 
   var a = document.getElementById('numAsteroids').value;
   for (var i = 0; i < a; i++)
