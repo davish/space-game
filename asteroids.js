@@ -3,7 +3,11 @@ var keyboard = {
   'right': 39,
   'up': 38,
   'space': 32,
-  'w': 87
+  'w': 87,
+  'a': 65,
+  's': 83,
+  'd': 68,
+  'c': 67
 }
 
 window.onkeydown = function(e) {
@@ -20,8 +24,21 @@ window.onkeydown = function(e) {
     bullets.push(new Bullet(Ship));
   }
   else if (e.which == keyboard['w']) {
-    Ship.anchor = true;
+    other.thrust = true;
   }
+  else if (e.which == keyboard['a']) {
+    other.rotation = "left";
+  }
+  else if (e.which == keyboard['d']) {
+    other.rotation = "right";
+  }
+  else if (e.which == keyboard['c']) {
+    bullets.push(new Bullet(other));
+  }
+  else {
+    return;
+  }
+  e.preventDefault();
 }
 window.onkeyup = function(e) {
   if (e.which == keyboard['left'] || e.which == keyboard['right']) {
@@ -30,8 +47,11 @@ window.onkeyup = function(e) {
   else if (e.which == keyboard['up']) {
     Ship.thrust = false;
   }
+  else if (e.which == keyboard['a'] || e.which == keyboard['d']) {
+    other.rotation = "null";
+  }
   else if (e.which == keyboard['w']) {
-    Ship.anchor = false;
+    other.thrust = false;
   }
 }
 
@@ -70,6 +90,16 @@ function step() {
     var s = Spaceship.all[i];
     s.anchorTo = null;
     var points = s.getRawPath();
+
+    for (var j = 0; j < bullets.length; j++) {
+      if (s && ctx.isPointInPath(s.getPath(), bullets[j].coords.x, bullets[j].coords.y)) {
+        if (bullets[j].owner != s) {
+          graveyard.push(bullets[j]);
+          graveyard.push(s);
+        }
+      }
+    }
+
     for (var j = 0; j < Asteroid.all.length; j++) {
       var a = Asteroid.all[j];
       var asteroidPath = a.getPath()
@@ -111,7 +141,10 @@ var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext("2d");
 
 var Ship = new Spaceship(new Point(300, 200));
-Ship.velocity = new Vector(0, 3);
+// Ship.velocity = new Vector(0, 3);
+
+var other = new Spaceship(new Point(100, 100));
+
 var stars = [];
 var bullets = [];
 
