@@ -21,7 +21,8 @@ window.onkeydown = function(e) {
     Ship.thrust = true;
   }
   else if (e.which == keyboard['space']) {
-    bullets.push(new Bullet(Ship));
+    // bullets.push(new Bullet(Ship));
+    Ship.shoot = true;
   }
   else if (e.which == keyboard['w']) {
     other.thrust = true;
@@ -33,7 +34,7 @@ window.onkeydown = function(e) {
     other.rotation = "right";
   }
   else if (e.which == keyboard['c']) {
-    bullets.push(new Bullet(other));
+    other.shoot = true;
   }
   else {
     return;
@@ -58,11 +59,22 @@ window.onkeyup = function(e) {
 function step() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   
-  var graveyard = [];
+  var graveyard = []; // array of sprites to despawn at the end of this iteration
 
-  for (var i = 0; i < bullets.length; i++) {
-    if (bullets[i].age > 100) {
-      graveyard.push(bullets[i]);
+  // shoot bullets
+  for (var i = 0; i < Spaceship.all.length; i++) {
+    var s = Spaceship.all[i];
+    if (s.shoot)
+      new Bullet(s);
+      // bullets.push(new Bullet(s));
+    s.shoot = false;
+  }
+
+  // despawn bullets
+  for (var i = 0; i < Bullet.all.length; i++) {
+    var b = Bullet.all[i];
+    if (b.age > 100) {
+      graveyard.push(b);
     }
   }
 
@@ -71,16 +83,17 @@ function step() {
   */
   for (var i = 0; i < Asteroid.all.length; i++) {
     var ast = Asteroid.all[i];
-    for (var j = 0; j < bullets.length; j++) {
-      if (graveyard.indexOf(bullets[j]) > -1)
+    for (var j = 0; j < Bullet.all.length; j++) {
+      var b = Bullet.all[j];
+      if (graveyard.indexOf(b) > -1)
         continue;
-      if (ast && ctx.isPointInPath(ast.getPath(), bullets[j].coords.x, bullets[j].coords.y)) {
+      if (ast && ctx.isPointInPath(ast.getPath(), b.coords.x, b.coords.y)) {
         if (ast.size > 1)
           for (var k = 0; k < 3; k++)
             new Asteroid(ast.size-1, ast.coords)
 
-        bullets[j].owner.score += 30/ast.size;
-        graveyard.push(bullets[j]);
+        b.owner.score += 30/ast.size;
+        graveyard.push(b);
         graveyard.push(ast);
       }
     }
@@ -91,10 +104,11 @@ function step() {
     s.anchorTo = null;
     var points = s.getRawPath();
 
-    for (var j = 0; j < bullets.length; j++) {
-      if (s && ctx.isPointInPath(s.getPath(), bullets[j].coords.x, bullets[j].coords.y)) {
-        if (bullets[j].owner != s) {
-          graveyard.push(bullets[j]);
+    for (var j = 0; j < Bullet.all.length; j++) {
+      var b = Bullet.all[j];
+      if (s && ctx.isPointInPath(s.getPath(), b.coords.x, b.coords.y)) {
+        if (b.owner != s) {
+          graveyard.push(b);
           graveyard.push(s);
         }
       }
@@ -141,19 +155,16 @@ var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext("2d");
 
 var Ship;
-// Ship.velocity = new Vector(0, 3);
-
 var other;
 
 var stars = [];
-var bullets = [];
 
 var requestID;
 
 function start() {
   if (requestID) {
     stars = [];
-    bullets = [];
+    Bullet.all = [];
     Sprite.all = [];
     Spaceship.all = [];
     Asteroid.all = [];
@@ -161,7 +172,11 @@ function start() {
     window.cancelAnimationFrame(requestID);
   }
   Ship = new Spaceship(new Point(300, 200));
-  other = new Spaceship(new Point(100, 100));
+
+  if (document.getElementById("multiPlayer").checked)
+    other = new Spaceship(new Point(100, 100));
+
+
   var num = document.getElementById('numStars').value;
   var interval = 2*Math.PI/num;
   var v = new Vector(0, 100);

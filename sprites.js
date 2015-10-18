@@ -102,6 +102,7 @@ function Spaceship(start) {
   
   this.thrust = false;
   this.rotation = "null";
+  this.shoot = false;
   this.anchor = false;
   this.anchorAge = 0;
   this.anchorEnd = this.getRawPath()[1];
@@ -176,11 +177,14 @@ function Bullet(owner) {
   this.speedLimit = owner.speedLimit + 5;
   this.owner = owner;
   this.velocity = Vector.add(owner.velocity, new Vector(owner.theta, 5));
+  
+  Bullet.all.push(this);
 }
 Bullet.prototype = new Sprite();
+Bullet.all = [];
 
 Bullet.prototype.despawn = function() {
-  bullets.splice(bullets.indexOf(this), 1);
+  Bullet.all.splice(Bullet.all.indexOf(this), 1);
   Sprite.prototype.despawn.call(this);
 }
 
