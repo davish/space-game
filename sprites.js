@@ -1,7 +1,7 @@
 const ROTATION_RATE = 5;
 const SPEED_LIMIT = 15;
 const NUM_CHILD_ASTEROIDS = 3;
-const SCALE_FACTOR = 1;
+const SCALE_FACTOR = .5;
 function Sprite(pts, start, scale) {
   this.vertices = []; // array of Points that define the polygon of the sprite.
   this.scale = scale ? scale : 1;

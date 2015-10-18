@@ -20,7 +20,7 @@ window.onkeydown = function(e) {
   else if (e.which == keyboard['up']) {
     Ship.thrust = true;
   }
-  else if (e.which == keyboard['space'] && bullets.length < 6) {
+  else if (e.which == keyboard['space']) {
     bullets.push(new Bullet(Ship));
   }
   else if (e.which == keyboard['w']) {
@@ -134,21 +134,34 @@ function step() {
   for (var i=0; i < stars.length; i++)
     stars[i].draw(ctx);
 
-  window.requestAnimationFrame(step);
+  requestID = window.requestAnimationFrame(step);
 }
 
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext("2d");
 
-var Ship = new Spaceship(new Point(300, 200));
+var Ship;
 // Ship.velocity = new Vector(0, 3);
 
-var other = new Spaceship(new Point(100, 100));
+var other;
 
 var stars = [];
 var bullets = [];
 
+var requestID;
+
 function start() {
+  if (requestID) {
+    stars = [];
+    bullets = [];
+    Sprite.all = [];
+    Spaceship.all = [];
+    Asteroid.all = [];
+
+    window.cancelAnimationFrame(requestID);
+  }
+  Ship = new Spaceship(new Point(300, 200));
+  other = new Spaceship(new Point(100, 100));
   var num = document.getElementById('numStars').value;
   var interval = 2*Math.PI/num;
   var v = new Vector(0, 100);
@@ -156,7 +169,7 @@ function start() {
 
   for (var i = 0; i < num; i++) {
     var starLoc = Point.add(center, v.components());
-    stars.push(new Star(starLoc, 150, 10));
+    stars.push(new Star(starLoc, 100, 10));
     v.theta += interval;
   }
   if (num == 1)
@@ -166,6 +179,6 @@ function start() {
   for (var i = 0; i < a; i++)
     new Asteroid(3);
 
-  window.requestAnimationFrame(step);
+  requestID = window.requestAnimationFrame(step);
 }
 
